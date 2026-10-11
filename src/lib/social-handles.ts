@@ -34,6 +34,22 @@ const PLATFORM_PATTERNS: Record<string, RegExp[]> = {
   behance: [/behance\.net\/([A-Za-z0-9_-]+)/i],
   codepen: [/codepen\.io\/([A-Za-z0-9_-]+)/i],
   vk: [/vk\.com\/([A-Za-z0-9_.]+)/i],
+  matrix: [/matrix\.to\/#\/@?([A-Za-z0-9_.=\-\/:]+)/i],
+  eyou: [/eyou\.social\/u\/([A-Za-z0-9_.-]+)/i],
+  patreon: [/patreon\.com\/(?:c\/)?([A-Za-z0-9_.-]+)/i],
+  paypal: [/paypal\.me\/([A-Za-z0-9_.-]+)/i],
+  kofi: [/ko-fi\.com\/([A-Za-z0-9_]+)/i],
+  bmac: [/buymeacoffee\.com\/([A-Za-z0-9_.-]+)/i],
+  revolut: [/revolut\.me\/([A-Za-z0-9_.-]+)/i],
+  readcv: [/read\.cv\/([A-Za-z0-9_.-]+)/i],
+  opencollective: [/opencollective\.com\/([A-Za-z0-9_.-]+)/i],
+  soundcloud: [/soundcloud\.com\/([A-Za-z0-9_-]+)/i],
+  lastfm: [/last\.fm\/user\/([A-Za-z0-9_.-]+)/i],
+  letterboxd: [/letterboxd\.com\/([A-Za-z0-9_]+)/i],
+  myanimelist: [/myanimelist\.net\/profile\/([A-Za-z0-9_-]+)/i],
+  trakt: [/trakt\.tv\/users\/([A-Za-z0-9_.-]+)/i],
+  calcom: [/cal\.com\/([A-Za-z0-9_.-]+)/i],
+  calendly: [/calendly\.com\/([A-Za-z0-9_.-]+)/i],
 };
 
 /** Het zichtbare prefix in het invoerveld, bv. `instagram.com/`. */
