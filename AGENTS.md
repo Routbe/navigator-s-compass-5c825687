@@ -30,3 +30,5 @@
 - Third-party images on public pages load only via `/api/public/proxy-image` (host allowlist in `src/lib/image-proxy-rules.ts`). Why: visitors' IPs must never reach third-party image hosts.
 - Hub connections live in `user_integrations` (db/73) with a per-row Pro/Social/Both audience; `verified` is set only server-side when the handle matches a sign-in identity. Why: typed handles must never look proven.
 - Total reach is summed only from Connections Hub rows (`user_integrations`, db/74): open platforms auto-fetch, others use a per-integration manual count; never social_links or placeholders. Why: the number must reflect what the member actually connected.
+- Admin review links (`/review/<token>`) and booking accept/decline links only show a confirm step on GET; changes happen on POST. Why: mail scanners open links.
+- Site status mails render in `src/emails/site-mails.ts` and send via `site-mail.server.ts` fire-and-forget. Why: a mail failure must never block the action.
