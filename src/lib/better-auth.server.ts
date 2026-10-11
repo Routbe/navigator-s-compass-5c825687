@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import { betterAuth } from "better-auth";
 import { magicLink } from "better-auth/plugins/magic-link";
 import { genericOAuth } from "better-auth/plugins/generic-oauth";
+import { twoFactor } from "better-auth/plugins/two-factor";
+import { passkey } from "@better-auth/passkey";
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import ws from "ws";
 
@@ -212,6 +214,21 @@ export function createRoutAuth(request?: Request) {
   if (genericConfigs.length) plugins.push(genericOAuth({ config: genericConfigs as never }));
 
   const origin = requestOrigin(request);
+
+  // Echte 2FA (TOTP, ook voor accounts zonder wachtwoord) en passkeys (WebAuthn).
+  plugins.push(
+    twoFactor({
+      issuer: "ROUT",
+      allowPasswordless: true,
+      schema: { twoFactor: { modelName: "neon_auth.twoFactor" } },
+    } as never),
+    passkey({
+      rpID: new URL(origin).hostname,
+      rpName: "ROUT",
+      origin,
+      schema: { passkey: { modelName: "neon_auth.passkey" } },
+    } as never),
+  );
 
   return betterAuth({
     appName: "ROUT",
