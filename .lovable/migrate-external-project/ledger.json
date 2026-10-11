@@ -1,12 +1,54 @@
 {
   "source": "github:Routbe/navigator-s-compass-73035948",
   "capabilities": [
-    {"capability": "application code (TanStack Start, 942 files)", "source": "repo", "outcome": "migrate", "status": "in_progress", "next_action": "copy into project, install, build"},
-    {"capability": "database schema (76 SQL migrations, Neon Postgres)", "source": "db/*.sql", "outcome": "migrate", "status": "pending", "next_action": "needs DATABASE_URL (Neon) or Lovable Cloud port; schema preserved in db/"},
-    {"capability": "records", "source": "none attached", "outcome": "migrate", "status": "pending", "next_action": "request CSV/JSON exports from Neon dashboard"},
-    {"capability": "auth (better-auth, passkeys, OAuth providers)", "source": "repo", "outcome": "migrate", "status": "pending", "next_action": "needs BETTER_AUTH_SECRET / BETTER_AUTH_URL secrets"},
-    {"capability": "Stripe payments + webhook", "source": "repo", "outcome": "preserve", "status": "pending", "next_action": "request Stripe keys via secret form before verification"},
-    {"capability": "public API routes, cron, webhooks, OAuth callbacks", "source": "repo", "outcome": "preserve", "status": "in_progress", "next_action": "code copied; secrets needed for live verification"},
-    {"capability": "secrets (ROUT_API_KEY, session secrets, etc.)", "source": "ENVIRONMENT.md", "outcome": "preserve", "status": "pending", "next_action": "request via Lovable secret form at verification time"}
+    {
+      "capability": "application code (TanStack Start, 942 files)",
+      "source": "repo",
+      "outcome": "migrate",
+      "status": "verified",
+      "next_action": "done \u2014 builds and renders"
+    },
+    {
+      "capability": "database schema (76 SQL migrations, Neon Postgres)",
+      "source": "db/*.sql",
+      "outcome": "migrate",
+      "status": "pending",
+      "next_action": "needs DATABASE_URL (Neon) or Lovable Cloud port; schema preserved in db/"
+    },
+    {
+      "capability": "records",
+      "source": "none attached",
+      "outcome": "migrate",
+      "status": "pending",
+      "next_action": "request CSV/JSON exports from Neon dashboard"
+    },
+    {
+      "capability": "auth (better-auth, passkeys, OAuth providers)",
+      "source": "repo",
+      "outcome": "migrate",
+      "status": "pending",
+      "next_action": "needs BETTER_AUTH_SECRET / BETTER_AUTH_URL secrets"
+    },
+    {
+      "capability": "Stripe payments + webhook",
+      "source": "repo",
+      "outcome": "preserve",
+      "status": "pending",
+      "next_action": "request Stripe keys via secret form before verification"
+    },
+    {
+      "capability": "public API routes, cron, webhooks, OAuth callbacks",
+      "source": "repo",
+      "outcome": "preserve",
+      "status": "in_progress",
+      "next_action": "code copied; secrets needed for live verification"
+    },
+    {
+      "capability": "secrets (ROUT_API_KEY, session secrets, etc.)",
+      "source": "ENVIRONMENT.md",
+      "outcome": "preserve",
+      "status": "pending",
+      "next_action": "request via Lovable secret form at verification time"
+    }
   ]
 }
