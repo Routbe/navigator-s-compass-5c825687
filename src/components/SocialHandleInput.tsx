@@ -52,8 +52,13 @@ export function SocialHandleInput({
         <span className="shrink-0" style={{ color: brandOf(kind) }} aria-hidden>
           <SocialPlatformIcon source={kind} className="h-4 w-4 text-current" />
         </span>
-        <span className="hidden shrink-0 font-mono text-[11px] text-muted-foreground sm:inline">
-          {prefix}
+        {prefix !== "@" && (
+          <span className="hidden shrink-0 font-mono text-[11px] text-muted-foreground sm:inline">
+            {prefix.replace(/@$/, "")}
+          </span>
+        )}
+        <span className="shrink-0 select-none text-sm font-medium text-muted-foreground" aria-hidden>
+          @
         </span>
         <input
           type="text"
