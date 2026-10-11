@@ -11,6 +11,22 @@
  * platform. Onbekende/eigen URLs vallen terug op een neutraal link-symbool.
  */
 import {
+  siKick,
+  siReaddotcv,
+  siHashnode,
+  siRevolut,
+  siOpencollective,
+  siBuymeacoffee,
+  siApplemusic,
+  siTidal,
+  siLastdotfm,
+  siEpicgames,
+  siTrakt,
+  siCaldotcom,
+  siCalendly,
+  siBitcoin,
+  siEthereum,
+  siBookingdotcom,
   siBandcamp,
   siBehance,
   siBluesky,
@@ -173,6 +189,23 @@ export const BRAND_ICONS: Record<string, BrandIcon> = {
   // Reputatie
   trustpilot: from(siTrustpilot),
   yelp: from(siYelp),
+  kick: from(siKick),
+  codepen: { title: "CodePen", path: "M24 8.182l-.018-.087-.017-.05c-.01-.024-.018-.05-.03-.075-.003-.018-.015-.034-.02-.05l-.035-.067-.03-.05-.044-.06-.046-.045-.06-.045-.046-.03-.06-.044-.044-.04-.015-.02L12.58.19c-.347-.232-.796-.232-1.142 0L.453 7.502l-.015.015-.044.035-.06.05-.038.04-.05.056-.037.045-.05.06c-.02.017-.03.03-.03.046l-.05.06-.02.06c-.02.01-.02.04-.03.07l-.01.05C0 8.12 0 8.15 0 8.18v7.497c0 .044.003.09.01.135l.01.046c.005.03.01.06.02.086l.015.05c.01.027.016.053.027.075l.022.05c0 .01.015.04.03.06l.03.04c.015.01.03.04.045.06l.03.04.04.04c.01.013.01.03.03.03l.06.042.04.03.01.014 10.97 7.33c.164.12.375.163.57.163s.39-.06.57-.18l10.99-7.28.014-.01.046-.037.06-.043.048-.036.052-.058.033-.045.04-.06.03-.05.03-.07.016-.052.03-.077.015-.045.03-.08v-7.5c0-.05 0-.095-.016-.14l-.014-.045.044.003zm-11.99 6.28l-3.65-2.44 3.65-2.442 3.66 2.441-3.66 2.44zm-1.034-6.674l-4.473 2.99L2.89 9.315l8.086-5.4V7.79zm-6.33 4.233l-2.582 1.73V10.3l2.582 1.726zm1.857 1.25l4.473 2.99v3.882l-8.086-5.4 3.613-2.412v-.06zm6.537 2.99l4.474-2.98 3.613 2.4-8.087 5.4v-3.88zm6.33-4.23l2.583-1.72v3.456l-2.583-1.73zm-1.855-1.24L13.042 7.8V3.92l8.085 5.4-3.612 2.415v.003z", color: "#111111" },
+  readcv: from(siReaddotcv, "#111111"),
+  hashnode: from(siHashnode),
+  revolut: from(siRevolut, "#191c1f"),
+  opencollective: from(siOpencollective),
+  bmac: from(siBuymeacoffee),
+  applemusic: from(siApplemusic),
+  tidal: from(siTidal, "#111111"),
+  lastfm: from(siLastdotfm),
+  epicgames: from(siEpicgames, "#111111"),
+  trakt: from(siTrakt),
+  calcom: from(siCaldotcom, "#111111"),
+  calendly: from(siCalendly),
+  lightning: from(siBitcoin),
+  evm: from(siEthereum),
+  booking: from(siBookingdotcom),
 };
 
 /** Hostnaam-fragment → platformsleutel, voor vrij ingevoerde URLs. */

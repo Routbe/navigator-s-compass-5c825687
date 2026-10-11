@@ -168,6 +168,17 @@ export async function submitInfluencerRequest(userId: string, input: InfluencerI
     return { ok: false as const, reason: "Geef minstens één sociale link op." };
   }
 
+  // Creator badge needs a proven audience: total reach from connected accounts only.
+  const { CREATOR_MIN_REACH, isCreatorEligible } = await import("./creator-eligibility");
+  const { recomputeTotalReach } = await import("./total-reach.server");
+  const reach = await recomputeTotalReach(userId).catch(() => 0);
+  if (!isCreatorEligible(reach)) {
+    return {
+      ok: false as const,
+      reason: `Je hebt minstens ${CREATOR_MIN_REACH.toLocaleString("nl-BE")} volgers nodig via je gekoppelde accounts (nu ${reach.toLocaleString("nl-BE")}). Koppel je accounts in de Connections Hub.`,
+    };
+  }
+
   const profile = (await sql`
     select coalesce(verified, false) as verified from public.profiles where id = ${userId} limit 1
   `) as Row[];

@@ -336,6 +336,12 @@ export async function claimRootSubdomainFor(userId: string): Promise<{
     }).catch((error: unknown) => {
       console.error("[Subdomain] admin notification failed", error);
     });
+    const { later, recipient, sendSiteMail, siteOrigin } = await import("./site-mail.server");
+    later(async () => {
+      const r = await recipient(userId);
+      const { subdomainMail } = await import("@/emails/site-mails");
+      await sendSiteMail(r.email, subdomainMail({ lang: r.lang, name: r.name, subdomain, stage: "requested", url: `${siteOrigin()}/dashboard` }), ["subdomain", "requested"]);
+    });
   }
 
   return { subdomain, status: "pending_dns" };

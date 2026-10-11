@@ -23,7 +23,25 @@ function page(title: string, body: string, status: number): Response {
 export const Route = createFileRoute("/api_/public/bookings/$id/$action")({
   server: {
     handlers: {
+      // GET only shows a confirm button: mail scanners that open links change nothing.
       GET: async ({ request, params }) => {
+        const action =
+          params.action === "accept" ? "accept" : params.action === "decline" ? "decline" : null;
+        if (!action) return page("Onbekende actie", "Deze link is niet geldig.", 400);
+        const token = new URL(request.url).searchParams.get("token") ?? "";
+        const { verifyBookingToken } = await import("@/lib/booking.server");
+        if (!verifyBookingToken(params.id, action, token)) {
+          return page("Ongeldige link", "Deze bevestigingslink klopt niet of is verlopen.", 401);
+        }
+        const label = action === "accept" ? "Ja, afspraak aanvaarden" : "Ja, aanvraag weigeren";
+        const safe = token.replace(/[^A-Za-z0-9._~-]/g, "");
+        return page(
+          action === "accept" ? "Afspraak aanvaarden?" : "Aanvraag weigeren?",
+          `Er verandert pas iets als je bevestigt.</p><form method="post" action="?token=${safe}"><button type="submit" style="font:inherit;padding:.7rem 1.4rem;border:0;border-radius:.5rem;background:#0f172a;color:#fff;cursor:pointer">${label}</button></form><p>`,
+          200,
+        );
+      },
+      POST: async ({ request, params }) => {
         const action =
           params.action === "accept" ? "accept" : params.action === "decline" ? "decline" : null;
         if (!action) return page("Onbekende actie", "Deze link is niet geldig.", 400);

@@ -148,3 +148,15 @@ describe("handleValidationError", () => {
     expect(handleValidationError("onbekend", "!!!")).toBeNull();
   });
 });
+
+import { describe as d2, expect as e2, it as i2 } from "vitest";
+import { extractHandle as xh, socialUrl as su } from "./social-handles";
+d2("smart paste for added platforms", () => {
+  i2("strips pasted URLs to the username", () => {
+    e2(xh("patreon", "https://www.patreon.com/c/jane?utm=1")).toBe("jane");
+    e2(xh("calendly", "https://calendly.com/jane/30min")).toBe("jane");
+  });
+  i2("W.social appends .wsocial.eu", () => {
+    e2(su("wsocial", "jane")).toContain("jane.wsocial.eu");
+  });
+});

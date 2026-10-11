@@ -67,6 +67,7 @@ import { Route as FIdRouteImport } from './routes/f.$id'
 import { Route as GiftCodeRouteImport } from './routes/gift_.$code'
 import { Route as OauthAuthorizeRouteImport } from './routes/oauth.authorize'
 import { Route as RUsernameRouteImport } from './routes/r.$username'
+import { Route as ReviewTokenRouteImport } from './routes/review.$token'
 import { Route as SSlugRouteImport } from './routes/s.$slug'
 import { Route as StatsTokenRouteImport } from './routes/stats.$token'
 import { Route as UUsernameRouteImport } from './routes/u.$username'
@@ -433,6 +434,11 @@ const OauthAuthorizeRoute = OauthAuthorizeRouteImport.update({
 const RUsernameRoute = RUsernameRouteImport.update({
   id: '/r/$username',
   path: '/r/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewTokenRoute = ReviewTokenRouteImport.update({
+  id: '/review/$token',
+  path: '/review/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SSlugRoute = SSlugRouteImport.update({
@@ -921,6 +927,7 @@ export interface FileRoutesByFullPath {
   '/gift/$code': typeof GiftCodeRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/r/$username': typeof RUsernameRoute
+  '/review/$token': typeof ReviewTokenRoute
   '/s/$slug': typeof SSlugRoute
   '/stats/$token': typeof StatsTokenRoute
   '/u/$username': typeof UUsernameRouteWithChildren
@@ -1055,6 +1062,7 @@ export interface FileRoutesByTo {
   '/gift/$code': typeof GiftCodeRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/r/$username': typeof RUsernameRoute
+  '/review/$token': typeof ReviewTokenRoute
   '/s/$slug': typeof SSlugRoute
   '/stats/$token': typeof StatsTokenRoute
   '/u/$username': typeof UUsernameRouteWithChildren
@@ -1191,6 +1199,7 @@ export interface FileRoutesById {
   '/gift_/$code': typeof GiftCodeRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/r/$username': typeof RUsernameRoute
+  '/review/$token': typeof ReviewTokenRoute
   '/s/$slug': typeof SSlugRoute
   '/stats/$token': typeof StatsTokenRoute
   '/u/$username': typeof UUsernameRouteWithChildren
@@ -1329,6 +1338,7 @@ export interface FileRouteTypes {
     | '/gift/$code'
     | '/oauth/authorize'
     | '/r/$username'
+    | '/review/$token'
     | '/s/$slug'
     | '/stats/$token'
     | '/u/$username'
@@ -1463,6 +1473,7 @@ export interface FileRouteTypes {
     | '/gift/$code'
     | '/oauth/authorize'
     | '/r/$username'
+    | '/review/$token'
     | '/s/$slug'
     | '/stats/$token'
     | '/u/$username'
@@ -1598,6 +1609,7 @@ export interface FileRouteTypes {
     | '/gift_/$code'
     | '/oauth/authorize'
     | '/r/$username'
+    | '/review/$token'
     | '/s/$slug'
     | '/stats/$token'
     | '/u/$username'
@@ -1724,6 +1736,7 @@ export interface RootRouteChildren {
   GiftCodeRoute: typeof GiftCodeRoute
   OauthAuthorizeRoute: typeof OauthAuthorizeRoute
   RUsernameRoute: typeof RUsernameRoute
+  ReviewTokenRoute: typeof ReviewTokenRoute
   SSlugRoute: typeof SSlugRoute
   StatsTokenRoute: typeof StatsTokenRoute
   UUsernameRoute: typeof UUsernameRouteWithChildren
@@ -2173,6 +2186,13 @@ declare module '@tanstack/react-router' {
       path: '/r/$username'
       fullPath: '/r/$username'
       preLoaderRoute: typeof RUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/review/$token': {
+      id: '/review/$token'
+      path: '/review/$token'
+      fullPath: '/review/$token'
+      preLoaderRoute: typeof ReviewTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/s/$slug': {
@@ -2975,6 +2995,7 @@ const rootRouteChildren: RootRouteChildren = {
   GiftCodeRoute: GiftCodeRoute,
   OauthAuthorizeRoute: OauthAuthorizeRoute,
   RUsernameRoute: RUsernameRoute,
+  ReviewTokenRoute: ReviewTokenRoute,
   SSlugRoute: SSlugRoute,
   StatsTokenRoute: StatsTokenRoute,
   UUsernameRoute: UUsernameRouteWithChildren,

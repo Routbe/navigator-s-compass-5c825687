@@ -127,7 +127,18 @@ export const rotateOAuthSecret = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertVerified(context.userId);
     const { rotateClientSecret } = await import("./provider.server");
-    return friendly(async () => ({ clientSecret: await rotateClientSecret(context.userId, data.id) }));
+    return friendly(async () => {
+      const clientSecret = await rotateClientSecret(context.userId, data.id);
+      const { later, recipient, sendSiteMail, siteOrigin } = await import("@/lib/site-mail.server");
+      later(async () => {
+        const { sql } = await import("@/lib/neon");
+        const rows = (await sql`select name from public.oauth_clients where id = ${data.id} limit 1`) as Record<string, unknown>[];
+        const r = await recipient(context.userId);
+        const { secretRotatedMail } = await import("@/emails/site-mails");
+        await sendSiteMail(r.email, secretRotatedMail({ lang: r.lang, name: r.name, app: String(rows[0]?.["name"] ?? "je app"), consoleUrl: `${siteOrigin()}/developers` }), ["console", "secret-rotated"]);
+      });
+      return { clientSecret };
+    });
   });
 
 export const getOAuthClientInsights = createServerFn({ method: "POST" })
@@ -202,6 +213,17 @@ export const reviewAppVerificationRequest = createServerFn({ method: "POST" })
     await assertAdminRole(context.userId);
     const { reviewVerification } = await import("./provider.server");
     await reviewVerification(context.userId, data.requestId, data.approve);
+    const { later, recipient, sendSiteMail, siteOrigin } = await import("@/lib/site-mail.server");
+    later(async () => {
+      const { sql } = await import("@/lib/neon");
+      const rows = (await sql`select c.name, c.owner_user_id from public.oauth_client_verification_requests v
+        join public.oauth_clients c on c.client_id = v.client_id where v.id = ${data.requestId} limit 1`) as Record<string, unknown>[];
+      const owner = rows[0]?.["owner_user_id"];
+      if (typeof owner !== "string") return;
+      const r = await recipient(owner);
+      const { appReviewMail } = await import("@/emails/site-mails");
+      await sendSiteMail(r.email, appReviewMail({ lang: r.lang, name: r.name, app: String(rows[0]?.["name"] ?? "je app"), approved: data.approve, consoleUrl: `${siteOrigin()}/developers` }), ["console", "app-review"]);
+    });
     return { ok: true };
   });
 
@@ -385,7 +407,17 @@ export const decideAuthorizeRequest = createServerFn({ method: "POST" })
       codeChallenge: data.codeChallenge,
       nonce: data.nonce ?? null,
     });
+    const { hasConsent: hadConsent } = await import("./provider.server");
+    const firstTime = !(await hadConsent(context.userId, client.clientId, scopes).catch(() => true));
     await rememberConsent(context.userId, client.clientId, scopes);
+    if (firstTime) {
+      const { later, recipient, sendSiteMail, siteOrigin } = await import("@/lib/site-mail.server");
+      later(async () => {
+        const r = await recipient(context.userId);
+        const { appConnectedMail } = await import("@/emails/site-mails");
+        await sendSiteMail(r.email, appConnectedMail({ lang: r.lang, name: r.name, app: client.name, scopes, manageUrl: `${siteOrigin()}/dashboard` }), ["console", "app-connected"]);
+      });
+    }
     return { redirectTo: redirectWith(data.redirectUri, data.state, { code }) };
   });
 
