@@ -86,6 +86,9 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
     }
   };
   const [loading, setLoading] = useState(false);
+  const [connecting, setConnecting] = useState<string | null>(null);
+  const [needTotp, setNeedTotp] = useState(false);
+  const [totp, setTotp] = useState("");
   const [fediverse, setFediverse] = useState<"bluesky" | "mastodon" | null>(null);
   const redirected = useRef(false);
   const [enabled, setEnabled] = useState<string[] | null>(null);
