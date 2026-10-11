@@ -1,7 +1,7 @@
 # Roadmap
-- [ ] Unified transactional email design and complete site-event catalogue
-- [ ] Applicant receipts, admin review links and decision follow-ups
-- [ ] Creator eligibility (10,000 followers), pink creator and distinct business marks
+- [x] Site status emails (sign-in, developer console, subdomain) + confirm-first booking/review links
+- [x] Review confirmation page behind admin email buttons
+- [x] Creator eligibility (10,000 followers), pink creator and new business badge
 - [ ] Verify email renders, approval security and badge tests; identify service blockers
 - [ ] Ambient Weer: settings, private Pro webhook, cached weather and live atmospheric overlay
 - [x] Neon database updates (all applied)
@@ -13,3 +13,6 @@
 - [ ] Modular status balloon (shape, outline, text FX, interactive fills, glow) — uploaded brief, next
 - [ ] Universal @-handle inputs + brand icons for every component — uploaded brief, next
 - [ ] Run database updates db/74 and db/75 — needs the migration run
+- [ ] Spotify redirect fix: always https://rout.be callback behind proxies
+- [ ] Phase 1: brand icons + smart @-handle inputs (W.social etc.) — then checkpoint
+- [ ] Phase 2: modular status bubble (shape, border, font, text FX, fire/snow/water fills)
