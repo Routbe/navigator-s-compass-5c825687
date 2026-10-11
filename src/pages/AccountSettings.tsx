@@ -44,6 +44,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { db } from "@/lib/db/client";
 import { updateAuthUser } from "@/lib/auth.functions";
 import { toast } from "sonner";
+import { QRCodeSVG } from "qrcode.react";
+import { authClient } from "@/lib/auth-client";
 import { LOCALES, LOCALE_LABELS, useI18n } from "@/lib/i18n";
 import { useLanguagePreference } from "@/hooks/useLanguagePreference";
 
@@ -93,6 +95,10 @@ export default function AccountSettings() {
   const [mfaEnabled, setMfaEnabled] = useState(false);
   const [mfaDialogOpen, setMfaDialogOpen] = useState(false);
   const [mfaCode, setMfaCode] = useState("");
+  const [mfaPassword, setMfaPassword] = useState("");
+  const [mfaUri, setMfaUri] = useState<string | null>(null);
+  const [mfaBackup, setMfaBackup] = useState<string[]>([]);
+  const [mfaBusy, setMfaBusy] = useState(false);
 
   const [exporting, setExporting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -121,8 +127,9 @@ export default function AccountSettings() {
           null;
         setAvatarUrl(fromProfile ?? fromOauth);
       });
-    // 2FA is not part of our own auth layer yet.
-    setMfaEnabled(false);
+    void authClient.getSession().then((r) => {
+      if (alive) setMfaEnabled(Boolean((r.data?.user as { twoFactorEnabled?: boolean } | undefined)?.twoFactorEnabled));
+    });
     return () => {
       alive = false;
     };
@@ -159,12 +166,40 @@ export default function AccountSettings() {
   const changeEmail = openNeonAccount;
   const changePassword = openNeonAccount;
 
-  const enable2fa = async () => {
-    toast.info("Two-factor authentication is coming soon.");
+  const enable2fa = () => {
+    setMfaUri(null);
+    setMfaCode("");
+    setMfaPassword("");
+    setMfaBackup([]);
+    setMfaDialogOpen(true);
+  };
+
+  const start2fa = async () => {
+    setMfaBusy(true);
+    const res = await authClient.twoFactor.enable({ password: mfaPassword || undefined } as never);
+    setMfaBusy(false);
+    if (res.error) return toast.error(res.error.message ?? "Could not start 2FA setup.");
+    setMfaUri(res.data.totpURI);
+    setMfaBackup(res.data.backupCodes ?? []);
   };
 
   const verify2fa = async () => {
-    toast.info("2FA verification is coming soon — hang tight!");
+    setMfaBusy(true);
+    const res = await authClient.twoFactor.verifyTotp({ code: mfaCode });
+    setMfaBusy(false);
+    if (res.error) return toast.error(res.error.message ?? "That code is not correct.");
+    setMfaEnabled(true);
+    setMfaDialogOpen(false);
+    toast.success("Two-factor authentication is on.");
+  };
+
+  const disable2fa = async () => {
+    const password = window.prompt("Enter your password to turn off 2FA (leave empty if you have none)") ?? null;
+    if (password === null) return;
+    const res = await authClient.twoFactor.disable({ password: password || undefined } as never);
+    if (res.error) return toast.error(res.error.message ?? "Could not turn off 2FA.");
+    setMfaEnabled(false);
+    toast.success("Two-factor authentication is off.");
   };
 
   const signOutOthers = () => openNeonAccount();
@@ -233,23 +268,23 @@ export default function AccountSettings() {
       crumbs={[{ label: "Settings" }]}
     >
       <Tabs value={tab} onValueChange={(v) => setTab(parseTab(v))} className="mt-4">
-        <TabsList className="grid h-auto w-full grid-cols-3 gap-1 sm:grid-cols-6">
-          <TabsTrigger value="profile" className="h-9">
+        <TabsList className="flex h-auto w-full justify-start gap-1 overflow-x-auto whitespace-nowrap p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap">
+          <TabsTrigger className="h-9 shrink-0 px-3" value="profile">
             {t("settings.tabs.profile")}
           </TabsTrigger>
-          <TabsTrigger value="security" className="h-9">
+          <TabsTrigger className="h-9 shrink-0 px-3" value="security">
             {t("settings.tabs.security")}
           </TabsTrigger>
-          <TabsTrigger value="identities" className="h-9">
+          <TabsTrigger className="h-9 shrink-0 px-3" value="identities">
             {t("settings.tabs.identities")}
           </TabsTrigger>
-          <TabsTrigger value="payments" className="h-9">
+          <TabsTrigger className="h-9 shrink-0 px-3" value="payments">
             Betalingen
           </TabsTrigger>
-          <TabsTrigger value="data" className="h-9">
+          <TabsTrigger className="h-9 shrink-0 px-3" value="data">
             Data &amp; domein
           </TabsTrigger>
-          <TabsTrigger value="status" className="h-9">
+          <TabsTrigger className="h-9 shrink-0 px-3" value="status">
             {t("settings.tabs.status")}
           </TabsTrigger>
         </TabsList>
@@ -465,9 +500,15 @@ export default function AccountSettings() {
             <p className="text-sm text-muted-foreground">
               Add an extra layer of security to your account using an authenticator app (TOTP).
             </p>
-            <Button onClick={enable2fa} variant="outline" className="h-11 w-full sm:w-auto">
-              Enable 2FA
-            </Button>
+            {mfaEnabled ? (
+              <Button onClick={disable2fa} variant="outline" className="h-11 w-full sm:w-auto">
+                Turn off 2FA
+              </Button>
+            ) : (
+              <Button onClick={enable2fa} variant="outline" className="h-11 w-full sm:w-auto">
+                Enable 2FA
+              </Button>
+            )}
           </section>
 
           <section className="space-y-3 rounded-2xl border border-border bg-card p-4 sm:p-5">
@@ -580,21 +621,47 @@ export default function AccountSettings() {
               Scan this QR code with your authenticator app, then enter the 6-digit code to confirm.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex h-40 w-40 items-center justify-center rounded-xl border border-dashed border-border bg-muted/40 text-xs text-muted-foreground">
-              QR placeholder
+          {!mfaUri ? (
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-muted-foreground">
+                Confirm with your password. Signed in with Google, Infomaniak or another provider and no password? Leave it empty.
+              </p>
+              <Input type="password" value={mfaPassword} onChange={(e) => setMfaPassword(e.target.value)}
+                placeholder="Password (optional)" autoComplete="current-password" className="h-11 rounded-xl" />
+              <Button onClick={start2fa} disabled={mfaBusy} className="h-11 w-full">
+                {mfaBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Show QR code"}
+              </Button>
             </div>
-            <Input
-              value={mfaCode}
-              onChange={(e) => setMfaCode(e.target.value)}
-              placeholder="6-digit code"
-              maxLength={6}
-              className="h-11 rounded-xl text-center tracking-widest"
-            />
-            <Button onClick={verify2fa} className="h-11 w-full">
-              Verify &amp; enable
-            </Button>
-          </div>
+          ) : (
+            <div className="flex flex-col items-center gap-4">
+              <div className="rounded-xl bg-background p-3">
+                <QRCodeSVG value={mfaUri} size={176} />
+              </div>
+              <p className="break-all text-center font-mono text-[11px] text-muted-foreground">
+                {new URL(mfaUri).searchParams.get("secret")}
+              </p>
+              <Input
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ""))}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="6-digit code"
+                maxLength={6}
+                className="h-11 rounded-xl text-center tracking-widest"
+              />
+              <Button onClick={verify2fa} disabled={mfaBusy || mfaCode.length !== 6} className="h-11 w-full">
+                Verify &amp; enable
+              </Button>
+              {mfaBackup.length > 0 && (
+                <div className="w-full rounded-xl border border-border p-3">
+                  <p className="mb-2 text-xs font-medium">Backup codes — store them somewhere safe:</p>
+                  <div className="grid grid-cols-2 gap-1 font-mono text-xs">
+                    {mfaBackup.map((c) => <span key={c}>{c}</span>)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
