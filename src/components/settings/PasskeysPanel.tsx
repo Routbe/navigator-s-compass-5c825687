@@ -12,12 +12,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import {
-  deletePasskey,
-  finishPasskeyRegistration,
-  listPasskeys,
-  startPasskeyRegistration,
-} from "@/lib/webauthn.functions";
+import { addPasskey, deletePasskey, listPasskeys } from "@/lib/webauthn.functions";
+import { deviceLabelFrom } from "@/lib/passkey-label";
 
 interface PasskeyRow {
   id: string;
@@ -93,18 +89,7 @@ export function PasskeysPanel() {
     setRegistering(true);
     setError(null);
     try {
-      const { startRegistration } = await import("@simplewebauthn/browser");
-
-      let options: unknown;
-      try {
-        options = await startPasskeyRegistration();
-      } catch (err) {
-        console.error("[passkeys] startPasskeyRegistration failed", err);
-        throw new Error(describe(err, "The server could not start passkey registration."));
-      }
-
-      const attestation = await startRegistration({ optionsJSON: options as never });
-      const result = await finishPasskeyRegistration({ data: { response: attestation } });
+      const result = await addPasskey(deviceLabelFrom(navigator.userAgent));
       if (!result.ok) {
         setError(result.reason ?? "This passkey could not be registered.");
         toast.error(result.reason ?? "This passkey could not be registered.");
