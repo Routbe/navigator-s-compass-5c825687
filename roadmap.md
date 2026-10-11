@@ -13,6 +13,6 @@
 - [ ] Modular status balloon (shape, outline, text FX, interactive fills, glow) — uploaded brief, next
 - [ ] Universal @-handle inputs + brand icons for every component — uploaded brief, next
 - [ ] Run database updates db/74 and db/75 — needs the migration run
-- [ ] Spotify redirect fix: always https://rout.be callback behind proxies
+- [x] Spotify redirect fix: always https://rout.be callback behind proxies
 - [ ] Phase 1: brand icons + smart @-handle inputs (W.social etc.) — then checkpoint
 - [ ] Phase 2: modular status bubble (shape, border, font, text FX, fire/snow/water fills)
