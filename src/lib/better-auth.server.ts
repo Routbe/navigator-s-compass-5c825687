@@ -238,6 +238,16 @@ export function createRoutAuth(request?: Request) {
       },
     },
     verification: { modelName: "neon_auth.verification" },
+    databaseHooks: {
+      session: {
+        create: {
+          after: async (session: { id: string; userId: string; userAgent?: string | null }) => {
+            const { later, notifyNewSignIn } = await import("./site-mail.server");
+            later(() => notifyNewSignIn(session.userId, session.id, session.userAgent ?? null));
+          },
+        },
+      },
+    },
     emailAndPassword: { enabled: true, minPasswordLength: 10, autoSignIn: true },
     socialProviders: socialProviders as never,
     plugins: plugins as never,

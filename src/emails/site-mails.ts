@@ -21,7 +21,7 @@ export function signInNoticeMail(o: { lang: MailLang; name: string; device: stri
         paragraph(nl ? "Er is net aangemeld op je account vanaf een toestel dat we nog niet kenden." : "Your account was just signed in from a device we hadn't seen before."),
         details([[nl ? "Toestel" : "Device", o.device], [nl ? "Tijdstip" : "Time", o.when]]),
         paragraph(nl ? "Was jij dit? Dan hoef je niets te doen." : "Was this you? Then there's nothing to do."),
-        actions(button(nl ? "Niet ik — beveilig mijn account" : "Not me — secure my account", o.securityUrl, "secondary")),
+        actions(button(nl ? "Niet ik — beveilig mijn account" : "Not me — secure my account", o.securityUrl, "ghost")),
       ],
     }),
   };

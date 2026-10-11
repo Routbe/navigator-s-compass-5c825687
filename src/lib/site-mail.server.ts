@@ -62,7 +62,7 @@ export async function notifyNewSignIn(authUserId: string, sessionId: string, use
     name: String(u[0]?.["name"] ?? "").trim(),
     device: describeDevice(userAgent),
     when: new Date().toLocaleString("nl-BE", { timeZone: "Europe/Brussels" }),
-    securityUrl: `${siteOrigin()}/settings`,
+    securityUrl: `${siteOrigin()}/dashboard`,
   });
   await sendSiteMail(email, mail, ["security", "new-sign-in"]);
 }
