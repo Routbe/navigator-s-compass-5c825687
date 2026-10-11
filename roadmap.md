@@ -16,3 +16,8 @@
 - [x] Spotify redirect fix: always https://rout.be callback behind proxies
 - [x] Phase 1: brand icons + smart @-handle inputs (W.social etc.) — then checkpoint
 - [ ] Phase 2: modular status bubble (shape, border, font, text FX, fire/snow/water fills)
+- [x] Infomaniak: double-click-safe sign-in button, duplicate callback redirect, faster profile read
+- [x] Settings tabs scroll on mobile
+- [x] Real 2FA (authenticator app), passkeys, phone verification wiring
+- [ ] Run database update db/77 (2FA + passkeys) — needs the migration run
+- [ ] SMS keys (SMS_API_KEY etc.) — waiting on the user
