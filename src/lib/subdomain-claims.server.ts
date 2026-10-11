@@ -98,6 +98,15 @@ export async function promoteClaim(userId: string): Promise<void> {
        set status = 'active', dns_promoted_at = now()
      where user_id = ${userId} and dns_promoted_at is null
   `;
+  const { later, recipient, sendSiteMail } = await import("./site-mail.server");
+  later(async () => {
+    const rows = (await sql`select username from public.profiles where id = ${userId} limit 1`) as Record<string, unknown>[];
+    const handle = String(rows[0]?.["username"] ?? "").toLowerCase();
+    if (!handle) return;
+    const r = await recipient(userId);
+    const { subdomainMail } = await import("@/emails/site-mails");
+    await sendSiteMail(r.email, subdomainMail({ lang: r.lang, name: r.name, subdomain: `${handle}.rout.be`, stage: "active", url: `https://${handle}.rout.be` }), ["subdomain", "active"]);
+  });
 }
 
 const DOH = "https://cloudflare-dns.com/dns-query";
