@@ -162,7 +162,16 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
       toast.info("Deze inlogoptie is nog niet actief.");
       return;
     }
+    if (connecting) return; // dubbelklik-bescherming
     setLoading(true);
+    setConnecting(provider);
+    let leaving = false;
+    if (provider === "infomaniak") {
+      const l = document.createElement("link");
+      l.rel = "preconnect";
+      l.href = "https://login.infomaniak.com";
+      document.head.appendChild(l);
+    }
     try {
       if (GENERIC_OAUTH.has(provider)) {
         const res = await fetch("/api/auth/sign-in/oauth2", {
@@ -173,7 +182,8 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
         });
         const body = (await res.json().catch(() => null)) as { url?: string; message?: string } | null;
         if (res.ok && body?.url) {
-          window.location.href = body.url;
+          leaving = true;
+          window.location.assign(body.url);
           return;
         }
         const name = provider.charAt(0).toUpperCase() + provider.slice(1);
@@ -198,9 +208,47 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
               ? `serverfout ${e.status}`
               : "");
         toast.error(reason ? `${name}: ${reason}` : t("auth.toast.failed"));
-      }
+      } else leaving = true;
     } catch (err) {
       toast.error(errorMessage(err, t("auth.toast.failed")));
+    } finally {
+      // Bij doorsturen blijft de knop uit, zodat een tweede klik onmogelijk is.
+      if (!leaving) {
+        setLoading(false);
+        setConnecting(null);
+      }
+    }
+  };
+
+  const verifyTotp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await authClient.twoFactor.verifyTotp({ code: totp, trustDevice: true });
+      if (res.error) {
+        toast.error(res.error.message || "Deze code klopt niet.");
+        return;
+      }
+      setNeedTotp(false);
+      toast.success(t("auth.toast.welcome"));
+      await refresh();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const passkeyLogin = async () => {
+    setLoading(true);
+    try {
+      const res = await authClient.signIn.passkey();
+      if (res?.error) {
+        toast.error(res.error.message || "Inloggen met passkey mislukt.");
+        return;
+      }
+      toast.success(t("auth.toast.welcome"));
+      await refresh();
+    } catch (err) {
+      toast.error(errorMessage(err, "Inloggen met passkey mislukt."));
     } finally {
       setLoading(false);
     }
@@ -250,6 +298,11 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
       const error = (result as { error?: { message?: string } } | undefined)?.error;
       if (error) {
         toast.error(error.message || t("auth.toast.signinFailed"));
+        return;
+      }
+      if ((result as { data?: { twoFactorRedirect?: boolean } }).data?.twoFactorRedirect) {
+        setTotp("");
+        setNeedTotp(true);
         return;
       }
       toast.success(t("auth.toast.welcome"));
@@ -351,16 +404,56 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
                   }
                   void oauth(tile.id);
                 }}
-                disabled={loading}
+                disabled={loading || connecting !== null}
+                aria-busy={connecting === tile.id}
                 aria-label={`Verder met ${tile.label}`}
                 title={`Verder met ${tile.label}`}
                 className="group flex h-11 items-center justify-center gap-2 rounded-xl border border-border/60 bg-card/60 p-2 transition-all hover:border-border hover:bg-muted/50 disabled:opacity-60"
               >
-                <ProviderMark id={tile.id} />
+                {connecting === tile.id ? (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : (
+                  <ProviderMark id={tile.id} />
+                )}
                 <span className="sr-only">{`Verder met ${tile.label}`}</span>
               </button>
             ))}
           </div>
+
+          {connecting && (
+            <p role="status" aria-live="polite" className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              {`Verbinden met ${visibleTiles.find((x) => x.id === connecting)?.label ?? connecting}…`}
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={() => void passkeyLogin()}
+            disabled={loading}
+            className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-border/60 bg-card/60 text-sm transition-all hover:bg-muted/50 disabled:opacity-60"
+          >
+            Inloggen met passkey
+          </button>
+
+          {needTotp && (
+            <form onSubmit={verifyTotp} className="mt-3 space-y-2 rounded-xl border border-border p-3">
+              <p className="text-sm">Voer de 6-cijferige code uit je authenticator-app in.</p>
+              <input
+                value={totp}
+                onChange={(e) => setTotp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                autoFocus
+                aria-label="Code van 6 cijfers"
+                className="h-11 w-full rounded-xl border border-input bg-background text-center font-mono tracking-[0.4em]"
+              />
+              <button type="submit" disabled={loading || totp.length !== 6}
+                className="h-11 w-full rounded-xl bg-primary text-sm font-medium text-primary-foreground disabled:opacity-60">
+                Bevestigen
+              </button>
+            </form>
+          )}
 
           <FediverseDialog provider={fediverse} onClose={() => setFediverse(null)} />
 
