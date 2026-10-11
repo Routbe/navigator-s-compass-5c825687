@@ -1,4 +1,5 @@
-import { BadgeCheck, ShieldCheck, Sparkles } from "lucide-react";
+import { BadgeCheck, ShieldCheck } from "lucide-react";
+import { CreatorBadgeIcon } from "@/components/profile/CreatorBadgeIcon";
 import { BadgeBackdrop } from "@/components/profile/BadgeBackdrop";
 import { DomainBadgeIcon } from "@/components/profile/DomainBadgeIcon";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -69,7 +70,7 @@ export function ProfileBadge({
       : type === "domain"
         ? `Bedrijf geverifieerd${domain ? ` — ${domain}` : ""}`
         : type === "influencer"
-          ? "Publiek profiel geverifieerd"
+          ? "Geverifieerde creator"
           : t("profile.verified_badge_title");
 
   const body =
@@ -87,7 +88,7 @@ export function ProfileBadge({
     ) : type === "human" ? (
       <ShieldCheck className={`${iconSize} ${extra}`} aria-hidden />
     ) : type === "influencer" ? (
-      <Sparkles className={`${iconSize} text-[#ec4899] ${extra}`} aria-hidden />
+      <CreatorBadgeIcon className={`${iconSize} ${extra}`} />
     ) : (
       <BadgeCheck className={`${iconSize} text-[#1d9bf0] ${extra}`} aria-hidden />
     );
