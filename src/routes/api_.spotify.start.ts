@@ -14,7 +14,7 @@ export const Route = createFileRoute("/api_/spotify/start")({
           console.warn("[spotify] not configured, missing:", s.spotifyMissingKeys().join(", "));
           return back("not_configured");
         }
-        return new Response(null, { status: 302, headers: { location: s.spotifyAuthorizeUrl(user.id, new URL(request.url).origin) } });
+        return new Response(null, { status: 302, headers: { location: s.spotifyAuthorizeUrl(user.id, request) } });
       },
     },
   },

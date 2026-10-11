@@ -27,8 +27,26 @@ export function spotifyMissingKeys(): string[] {
   return out;
 }
 
-export function spotifyRedirectUri(origin?: string): string {
-  const base = (origin ?? process.env["PUBLIC_SITE_URL"] ?? "https://rout.be").replace(/\/$/, "");
+const LOCAL = /^(localhost|127\.0\.0\.1)(:\d+)?$/;
+
+/** Proxy-aware origin: non-local hosts are always https (TLS ends before the function). */
+export function resolveOrigin(input?: Request | string): string {
+  if (typeof input === "string" && input.trim()) {
+    const u = new URL(input.startsWith("http") ? input : `https://${input}`);
+    return `${LOCAL.test(u.host) ? u.protocol : "https:"}//${u.host}`;
+  }
+  if (input && typeof input === "object" && "headers" in input) {
+    const fwdHost = input.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+    const host = fwdHost || input.headers.get("host") || new URL(input.url).host;
+    const fwdProto = input.headers.get("x-forwarded-proto")?.split(",")[0]?.trim().toLowerCase();
+    return `${LOCAL.test(host) ? fwdProto || "http" : "https"}://${host}`;
+  }
+  return (process.env["PUBLIC_SITE_URL"] ?? "https://rout.be").replace(/\/$/, "");
+}
+
+export function spotifyRedirectUri(origin?: Request | string): string {
+  const resolved = resolveOrigin(origin);
+  const base = /(^|\.)rout\.be$/i.test(new URL(resolved).hostname) ? "https://rout.be" : resolved.replace(/\/$/, "");
   return `${base}/api/public/spotify/callback`;
 }
 
@@ -53,7 +71,7 @@ export function verifySpotifyState(state: string, now = Date.now()): string | nu
   return userId;
 }
 
-export function spotifyAuthorizeUrl(userId: string, origin?: string): string {
+export function spotifyAuthorizeUrl(userId: string, origin?: Request | string): string {
   const p = new URLSearchParams({
     response_type: "code",
     client_id: process.env["SPOTIFY_CLIENT_ID"]!,
@@ -98,7 +116,7 @@ async function store(userId: string, t: { access_token: string; refresh_token?: 
       updated_at = now()`;
 }
 
-export async function exchangeSpotifyCode(userId: string, code: string, origin?: string) {
+export async function exchangeSpotifyCode(userId: string, code: string, origin?: Request | string) {
   const t = await tokenRequest(
     new URLSearchParams({ grant_type: "authorization_code", code, redirect_uri: spotifyRedirectUri(origin) }),
   );

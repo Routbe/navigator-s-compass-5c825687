@@ -20,7 +20,7 @@ export const Route = createFileRoute("/api_/public/spotify/callback")({
         const user = await currentUser().catch(() => null);
         if (!stateUser || !user || user.id !== stateUser) return back("invalid_state");
         try {
-          await s.exchangeSpotifyCode(user.id, code, url.origin);
+          await s.exchangeSpotifyCode(user.id, code, request);
           return back("connected");
         } catch (e) {
           console.error("[spotify] exchange failed", e instanceof Error ? e.message : e);
