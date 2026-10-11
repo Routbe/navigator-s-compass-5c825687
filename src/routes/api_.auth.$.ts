@@ -139,6 +139,17 @@ export async function handleAuthRequest({ request }: { request: Request }) {
       const loc = res.headers.get("location") ?? "";
       const errParam = loc ? new URL(loc, request.url).searchParams.get("error") : null;
       if (res.status >= 400 || errParam) {
+        // Dubbele/verlopen callback (bv. dubbelklik bij de provider): als de
+        // eerste poging de sessie al aanmaakte, stil doorsturen i.p.v. foutpagina.
+        try {
+          const session = await createRoutAuth(request).api.getSession({ headers: request.headers });
+          if (session?.user) {
+            console.info("[auth] duplicate OAuth callback ignored; session already active", { error: errParam, path: relativePath });
+            return new Response(null, { status: 302, headers: { location: "/auth/continue", "cache-control": "no-store" } });
+          }
+        } catch {
+          /* fall through to the normal error */
+        }
         console.error("[auth] OAuth callback rejected:", { status: res.status, error: errParam, ...traceContext(request, relativePath) });
       }
     }

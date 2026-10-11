@@ -202,6 +202,32 @@ export function createRoutAuth(request?: Request) {
       userInfoUrl: "https://login.infomaniak.com/oauth2/userinfo",
       scopes: ["openid", "email", "profile"],
       pkce: true,
+      // Snelheid: claims uit het id_token lezen en de extra userinfo-roundtrip
+      // naar Infomaniak alleen doen als e-mail daar ontbreekt.
+      getUserInfo: async (tokens: { idToken?: string; accessToken?: string }) => {
+        let p: Record<string, unknown> = {};
+        try {
+          const part = tokens.idToken?.split(".")[1];
+          if (part) p = JSON.parse(atob(part.replace(/-/g, "+").replace(/_/g, "/")));
+        } catch {
+          p = {};
+        }
+        if (typeof p["email"] !== "string" && tokens.accessToken) {
+          const r = await fetch("https://login.infomaniak.com/oauth2/userinfo", {
+            headers: { authorization: `Bearer ${tokens.accessToken}` },
+          });
+          if (r.ok) p = { ...p, ...((await r.json()) as Record<string, unknown>) };
+        }
+        const id = p["sub"] ?? p["id"];
+        if (!id || typeof p["email"] !== "string") return null;
+        return {
+          id: String(id),
+          email: (p["email"] as string).toLowerCase(),
+          name: (p["name"] as string) ?? (p["display_name"] as string) ?? undefined,
+          image: (p["picture"] as string) ?? undefined,
+          emailVerified: p["email_verified"] === true,
+        };
+      },
       mapProfileToUser: (p: Record<string, unknown>) => ({
         email: typeof p["email"] === "string" ? (p["email"] as string).toLowerCase() : undefined,
         name: (p["name"] as string) ?? (p["display_name"] as string) ?? undefined,
@@ -223,9 +249,9 @@ export function createRoutAuth(request?: Request) {
       schema: { twoFactor: { modelName: "neon_auth.twoFactor" } },
     } as never),
     passkey({
-      rpID: new URL(origin).hostname,
+      rpID: new URL(origin ?? canonicalAppUrl()).hostname,
       rpName: "ROUT",
-      origin,
+      origin: origin ?? canonicalAppUrl(),
       schema: { passkey: { modelName: "neon_auth.passkey" } },
     } as never),
   );
