@@ -135,7 +135,7 @@ export const rotateOAuthSecret = createServerFn({ method: "POST" })
         const rows = (await sql`select name from public.oauth_clients where id = ${data.id} limit 1`) as Record<string, unknown>[];
         const r = await recipient(context.userId);
         const { secretRotatedMail } = await import("@/emails/site-mails");
-        await sendSiteMail(r.email, secretRotatedMail({ lang: r.lang, name: r.name, app: String(rows[0]?.["name"] ?? "je app"), consoleUrl: `${siteOrigin()}/console` }), ["console", "secret-rotated"]);
+        await sendSiteMail(r.email, secretRotatedMail({ lang: r.lang, name: r.name, app: String(rows[0]?.["name"] ?? "je app"), consoleUrl: `${siteOrigin()}/developers` }), ["console", "secret-rotated"]);
       });
       return { clientSecret };
     });
@@ -222,7 +222,7 @@ export const reviewAppVerificationRequest = createServerFn({ method: "POST" })
       if (typeof owner !== "string") return;
       const r = await recipient(owner);
       const { appReviewMail } = await import("@/emails/site-mails");
-      await sendSiteMail(r.email, appReviewMail({ lang: r.lang, name: r.name, app: String(rows[0]?.["name"] ?? "je app"), approved: data.approve, consoleUrl: `${siteOrigin()}/console` }), ["console", "app-review"]);
+      await sendSiteMail(r.email, appReviewMail({ lang: r.lang, name: r.name, app: String(rows[0]?.["name"] ?? "je app"), approved: data.approve, consoleUrl: `${siteOrigin()}/developers` }), ["console", "app-review"]);
     });
     return { ok: true };
   });
